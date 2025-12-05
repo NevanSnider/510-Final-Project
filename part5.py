@@ -1,3 +1,5 @@
+import re #for regex
+
 states = []
 inputs = []
 three_ops = ["+", "-", "x"]
@@ -10,25 +12,10 @@ curState = ""
 valid = True
 stack = ["LAMBDA"]
 
+
 def tokenizer(text):
-    tokens = []
-    #text is enumerated to be able to get indexes and it reads individual characters
-    for i, ch in enumerate(text):
-        #checks if its an alphanumeric character
-        if ch.isalpha():
-            #if theres a left parenthesis before the character and the next one is a digit then
-            #it is appended to be treated as a single token
-            if (text[i] == '(' and text[i+1].isdigit()):
-                tokens.append(tokens[i] + tokens[i+1])
-
-            #same thing as above but for if there is a / before the parenthesis 
-            elif (text[i] == '(' and text[i-1] == '/'):
-                tokens.append(tokens[i-1] + tokens[i])
-
-            #otherwise append it as normal
-        else:
-            tokens.append(ch)
-    return tokens
+    pattern = r'\(\d|\d+|[()+\-x/=]'
+    return re.findall(pattern, text)
 
 
 def accept(input_string):
@@ -53,22 +40,56 @@ def accept(input_string):
         matched = False
         for t in transitions:
             prestate, symbol, popped_var, pushed_var, poststate = t
-            if curState == prestate and myTokens[curToken] == symbol and stack[-1] == popped_var:
-                if popped_var != "LAMBDA":
-                    stack.pop()
-                if pushed_var != "LAMBDA":
-                    stack.append(pushed_var)
-                curState = poststate
-                curToken += 1
-                matched = True
-                break
+            if symbol == "LAMBDA":
+                if curState == prestate and stack[-1] == popped_var:
+                    if popped_var != "LAMBDA":
+                        stack.pop()
+                    if pushed_var != "LAMBDA":
+                        stack.append(pushed_var)
+                    curState = poststate
+                    matched = True
+                    break
+            else:    
+                if curState == prestate and myTokens[curToken] == symbol and stack[-1] == popped_var:
+                    if popped_var != "LAMBDA":
+                        stack.pop()
+                    if pushed_var != "LAMBDA":
+                        stack.append(pushed_var)
+                    curState = poststate
+                    curToken += 1
+                    matched = True
+                    break
         if not matched:
             print("The input is invalid")
             return
+
     if curState == accept_state and stack[-1] == "LAMBDA":
         print("The input is valid")
     else:
         print("The input is invalid")
+
+
+def lambda_closure(transitions):
+    global curState, stack
+    changed = True
+    while changed:
+        changed = False
+        for t in transitions:
+            pre, symbol, popped, pushed, post = t
+
+            if symbol != "LAMBDA":
+                continue
+
+            if curState == pre and stack[-1] == popped:
+                # apply transition
+                if popped != "LAMBDA":
+                    stack.pop()
+                if pushed != "LAMBDA":
+                    stack.append(pushed)
+
+                curState = post
+                changed = True
+                break  # restart scanning transitions
 
 
 def transition(line, myTokens, curToken):
