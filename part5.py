@@ -36,23 +36,11 @@ def accept(input_string):
     print("TOKENS:", myTokens)
 
     while curToken < len(myTokens):
-
-        # ================================
-        # DEBUG: STATE + STACK + NEXT TOKEN
-        # ================================
-        print("\n=== PDA STEP ===")
-        print("Current state:", curState)
-        print("Stack:", stack)
-        print("Token index:", curToken)
-        print("Next token:", myTokens[curToken])
-        print("=================")
-
         matched = False
         for t in transitions:
             prestate, symbol, popped_var, pushed_var, poststate = t
             if symbol == "LAMBDA":
                 if curState == prestate and stack[-1] == popped_var:
-                    print("Checking transition:", t)
                     if popped_var != "LAMBDA":
                         stack.pop()
                     if pushed_var != "LAMBDA":
@@ -63,7 +51,7 @@ def accept(input_string):
                     break
             else:    
                 if curState == prestate and myTokens[curToken] == symbol and stack[-1] == popped_var:
-                    print("Matched NORMAL transition:", t)
+                    print(curState, " ", symbol, " ", poststate)
                     if popped_var != "LAMBDA":
                         stack.pop()
                     if pushed_var != "LAMBDA":
@@ -74,12 +62,6 @@ def accept(input_string):
                     matched = True
                     break
         if not matched:
-            # DEBUG: Print why we failed
-            print("\nNO TRANSITION MATCHED!")
-            print("State:", curState)
-            print("Stack top:", stack[-1])
-            print("Token:", myTokens[curToken])
-            print("The input is invalid")
             return
         
     changed = True
@@ -88,7 +70,7 @@ def accept(input_string):
         for t in transitions:
             prestate, symbol, popped_var, pushed_var, poststate = t
             if symbol == "LAMBDA" and curState == prestate and stack[-1] == popped_var:
-                print("Applying FINAL λ-transition:", t)
+                print(curState, " ", symbol, " ", poststate)
                 if popped_var != "LAMBDA":
                     stack.pop()
                 if pushed_var != "LAMBDA":
@@ -97,15 +79,11 @@ def accept(input_string):
                 curState = poststate
                 changed = True
                 break
-        
-    print("\n=== FINAL CHECK ===")
-    print("State:", curState)
-    print("Stack:", stack)
 
     if curState == accept_state and stack[-1] == "LAMBDA":
-        print("The input is valid")
+        print("accept")
     else:
-        print("The input is invalid")
+        print("reject")
 
 
 def lambda_closure(transitions):
