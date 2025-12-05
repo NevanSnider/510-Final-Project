@@ -8,6 +8,7 @@ accept_state = ""
 output = ""
 curState = ""
 valid = True
+stack = ["LAMBDA"]
 
 def tokenizer(text):
     tokens = []
@@ -25,50 +26,55 @@ def tokenizer(text):
                 tokens.append(tokens[i-1] + tokens[i])
 
             #otherwise append it as normal
-            else:
-                tokens.append(ch)
+        else:
+            tokens.append(ch)
     return tokens
 
 
 def accept(input_string):
+    global states, inputs, start_state, accept_state, curState, stack
     #opens the file to be read
-    data_structure = open("DataStructure.txt", "r")
+    curState = ""
+    stack.clear()
+    stack.append("LAMBDA")
+    with open("DataStructure.txt") as f:
+        lines = f.readlines()
+    states = lines[0].split()
+    inputs = lines[1].split()
+    start_state = lines[2].strip()
+    accept_state = lines[3].strip()
+    transitions = [line.strip().split() for line in lines[5:]]
 
-    #keeps track of the current line being read
-    curLine = 1
-
-    #tokenizes the string to get the special ones in the alphabet
+    curState = start_state
     myTokens = tokenizer(input_string)
+    curToken = 0
 
-    #These are the things from our data structure we were required to have in there but I dont
-    #think we actually end up needing to use them for the code
-    for line in data_structure:
-        if (curLine == 1):
-            states = line.split(" ")
-        elif (curLine == 2):
-            inputs = line.split(" ")
-        elif (curLine == 3):
-            start_state = line.strip()
-        elif (curLine == 4):
-            global accept_state
-            accept_state = line.strip()
-        elif (curLine == 5):
-            stop_state = line.strip()
-        curLine += 1
-        #reads all the transitions in the data structure and will run through them
-    accepted = transition(line, myTokens, 0)
-        
-
-    #determines if the input is valid
-    if accepted == 1:
-        print("The the input is invalid")
-    if accepted == 0:
+    while curToken < len(myTokens):
+        matched = False
+        for t in transitions:
+            prestate, symbol, popped_var, pushed_var, poststate = t
+            if curState == prestate and myTokens[curToken] == symbol and stack[-1] == popped_var:
+                if popped_var != "LAMBDA":
+                    stack.pop()
+                if pushed_var != "LAMBDA":
+                    stack.append(pushed_var)
+                curState = poststate
+                curToken += 1
+                matched = True
+                break
+        if not matched:
+            print("The input is invalid")
+            return
+    if curState == accept_state and stack[-1] == "LAMBDA":
+        print("The input is valid")
+    else:
         print("The input is invalid")
 
 
 def transition(line, myTokens, curToken):
     global curState
-    stack = []
+    global stack
+    print(stack)
     #sets the initial state to the first one
     if (curState == ""):
         curState = start_state
@@ -79,7 +85,8 @@ def transition(line, myTokens, curToken):
             return 1
     #if the stack becomes empty we want it to be lambda
     if len(stack) == 0:
-        stack = ["LAMBDA"]
+        stack.clear()
+        stack.append("LAMBDA")
 
     
     #index 0 is the state being left from,
