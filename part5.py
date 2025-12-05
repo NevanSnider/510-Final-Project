@@ -2,20 +2,15 @@ import re #for regex
 
 states = []
 inputs = []
-three_ops = ["+", "-", "x"]
-normal_nums = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-funky_ones =["(0", "(1", "(2", "(3", "(4", "(5", "(6", "(7", "(8", "(9"]
 start_state = ""
 accept_state = ""
-output = ""
 curState = ""
 valid = True
 stack = ["LAMBDA"]
 
 
 def tokenizer(text):
-    pattern = r'\(\d|\d+|[()+\-x/=]'
-    return re.findall(pattern, text)
+    return list(text.strip())
 
 
 def accept(input_string):
@@ -28,40 +23,84 @@ def accept(input_string):
         lines = f.readlines()
     states = lines[0].split()
     inputs = lines[1].split()
-    start_state = lines[2].strip()
-    accept_state = lines[3].strip()
-    transitions = [line.strip().split() for line in lines[5:]]
+    stack_alphabet = lines[2].split()
+    start_state = lines[3].strip()      # q0
+    accept_state = lines[4].strip()     # q6
+    transitions = [line.strip().split() for line in lines[6:]]
 
     curState = start_state
     myTokens = tokenizer(input_string)
     curToken = 0
 
+    # DEBUG: print tokens
+    print("TOKENS:", myTokens)
+
     while curToken < len(myTokens):
+
+        # ================================
+        # DEBUG: STATE + STACK + NEXT TOKEN
+        # ================================
+        print("\n=== PDA STEP ===")
+        print("Current state:", curState)
+        print("Stack:", stack)
+        print("Token index:", curToken)
+        print("Next token:", myTokens[curToken])
+        print("=================")
+
         matched = False
         for t in transitions:
             prestate, symbol, popped_var, pushed_var, poststate = t
             if symbol == "LAMBDA":
                 if curState == prestate and stack[-1] == popped_var:
+                    print("Checking transition:", t)
                     if popped_var != "LAMBDA":
                         stack.pop()
                     if pushed_var != "LAMBDA":
-                        stack.append(pushed_var)
+                        for ch in reversed(pushed_var):
+                            stack.append(ch)   
                     curState = poststate
                     matched = True
                     break
             else:    
                 if curState == prestate and myTokens[curToken] == symbol and stack[-1] == popped_var:
+                    print("Matched NORMAL transition:", t)
                     if popped_var != "LAMBDA":
                         stack.pop()
                     if pushed_var != "LAMBDA":
-                        stack.append(pushed_var)
+                        for ch in reversed(pushed_var):
+                            stack.append(ch) 
                     curState = poststate
                     curToken += 1
                     matched = True
                     break
         if not matched:
+            # DEBUG: Print why we failed
+            print("\nNO TRANSITION MATCHED!")
+            print("State:", curState)
+            print("Stack top:", stack[-1])
+            print("Token:", myTokens[curToken])
             print("The input is invalid")
             return
+        
+    changed = True
+    while changed:
+        changed = False
+        for t in transitions:
+            prestate, symbol, popped_var, pushed_var, poststate = t
+            if symbol == "LAMBDA" and curState == prestate and stack[-1] == popped_var:
+                print("Applying FINAL λ-transition:", t)
+                if popped_var != "LAMBDA":
+                    stack.pop()
+                if pushed_var != "LAMBDA":
+                    for ch in reversed(pushed_var):
+                        stack.append(ch)
+                curState = poststate
+                changed = True
+                break
+        
+    print("\n=== FINAL CHECK ===")
+    print("State:", curState)
+    print("Stack:", stack)
 
     if curState == accept_state and stack[-1] == "LAMBDA":
         print("The input is valid")
