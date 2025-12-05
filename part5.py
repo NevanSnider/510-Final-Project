@@ -66,7 +66,7 @@ def accept(input_string):
 
 def transition(line, myTokens, curToken):
     global curState
-    global stack
+    stack = []
     #sets the initial state to the first one
     if (curState == ""):
         curState = start_state
@@ -106,15 +106,10 @@ def transition(line, myTokens, curToken):
     else:
         return 0
 
-        
-
     
 
 
-
-def main():
-    user_input = input("Enter a valid arithmetic equation:\n")
-    accept(user_input)
+user_input = input("Enter a valid arithmetic equation:\n")
+accept(user_input)
 
 
-main()
