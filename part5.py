@@ -52,10 +52,12 @@ def accept(input_string):
         elif (curLine == 4):
             global accept_state
             accept_state = line.strip()
-
-        #reads all the transitions in the data structure and will run through them
-            accepted = transition(line, myTokens, 0)
+        elif (curLine == 5):
+            stop_state = line.strip()
         curLine += 1
+        #reads all the transitions in the data structure and will run through them
+    accepted = transition(line, myTokens, 0)
+        
 
     #determines if the input is valid
     if accepted == 1:
@@ -85,7 +87,8 @@ def transition(line, myTokens, curToken):
     #index 2 is the variable being popped,
     #index 3 is the variable being pushed, 
     #index 4 is the state the transition goes to
-    transition_stuff = line.split(" ")
+    transition_stuff = line.strip().split(" ")
+    print(transition_stuff)
     prestate = transition_stuff[0]
     symbol = transition_stuff[1]
     popped_var = transition_stuff[2]
