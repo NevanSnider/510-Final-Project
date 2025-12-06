@@ -1,0 +1,7 @@
+This is our data structure for the PDA which accepts arithmetic statements
+Line 1: A whitespace separated list of the states
+Line 2: A whitespace separated list of input symbols
+Line 3: A whitespace separated list of the stack Alphabet
+Line 4: The start state
+Line 5: The accept state
+Lines 6-100: Each line represents one transition with each transition containing exactly 5 whitespace separated elements: 1) The state the transition leaves from, 2) the symbol being read by the transition, 3) The variable being popped from the stack, 4) the variable(s) being pushed to the stack, 5) The state the transition goes to 

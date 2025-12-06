@@ -1,0 +1,4 @@
+For part 5 you can run our code by 
+1. Ensuring python is installed (and installed to PATH),
+2. opening a terminal in the file directory that contains the code,
+3. and running the code with python (i.e. "py part5.py" or "python part5.py")
